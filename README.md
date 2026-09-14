@@ -9,6 +9,8 @@ Version needed: 1.2.4603 (Steam, public beta) (API 121)
 ## Usage
 Download vpDiffusionGamex64.dll and put it in ..\Steam\steamapps\common\JACK\plugins
 
+Make sure the FGD is up to date - [download from here](https://aynekko.github.io/DiffusionWiki/mapping/mapping/)
+
 ## Editing and building the source code
 Download the [JackSDK](https://github.com/SanyaSho/JackSDK).
 
