@@ -5,6 +5,9 @@
 
 // Plugin API
 #include "PluginMeta.h"
+#include "PluginActions.h"
+#include "PluginEntity.h"
+#include "PluginWorld.h"
 
 plugin_funcs_t gEditorfuncs;
 
@@ -272,4 +275,53 @@ DLL_EXPORT void vpRenderModel( int formatIndex, int renderFlags, qStudioData_s *
 
 		PR_End();
 	}
+}
+
+//===========================================================================================
+// Hiding cubemap_box entities
+//===========================================================================================
+static bool g_hideCubemapBoxes = false;
+static void ToggleHideCubemapBoxes( int actionUserData )
+{
+	qWorld_s *world = Global_GetCurrentWorld();
+	if ( !world || !world->m_entityList )
+		return;
+
+	g_hideCubemapBoxes = !g_hideCubemapBoxes;
+
+	// Walk every entity
+	for ( qEntity_s *e = world->m_entityList; e; e = e->next )
+	{
+		if ( !e->m_className || stricmp( e->m_className, "cubemap_box" ) != 0 )
+			continue;
+
+		if ( g_hideCubemapBoxes )
+			e->m_editorFlags |= EFL_HIDDEN;
+		else
+			e->m_editorFlags &= ~EFL_HIDDEN;
+	}
+
+	Sys_Printf( g_hideCubemapBoxes
+					? "cubemap_box entities hidden"
+					: "cubemap_box entities shown" );
+}
+
+static pluginActionDesc_t hideCubemapBoxesAction = {
+#if JACK_API_VERSION >= API_VERSION_STEAM_BETA
+	"HideCubemapBoxes", // internal name
+#endif
+	"&Hide cubemap_box", // menu / toolbar title (& = accelerator)
+	"Toggle visibility of cubemap_box entities",
+	"Diffusion", // category (submenu name)
+#if JACK_API_VERSION <= API_VERSION_STEAM_PUBLIC
+	0,
+#endif
+	ACTION_FLAG_INLEVEL, // enabled only when a map is open
+	0,					 // userData passed to the callback
+	ToggleHideCubemapBoxes };
+
+DLL_EXPORT int vpEnumActions( pfnRegisterAction registerAction, void *pluginManager )
+{
+	registerAction( &hideCubemapBoxesAction, pluginManager );
+	return 1;
 }
